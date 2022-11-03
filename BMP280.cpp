@@ -36,9 +36,13 @@ uint8_t regOffset(const void *pReg)
   return ((platformBitWidth_t) pReg - _regsAddr + BMP280_REG_START);
 }
 
-eStatus_t BMP280::begin(const uint8_t deviceAddress)
+BMP280::BMP280(const uint8_t deviceAddress)
 {
-  _addr = deviceAddress;
+  _deviceAddress = deviceAddress;
+}
+
+void BMP280::begin()
+{
   __DBG_CODE(Serial.print("last register addr: "); Serial.print(regOffset(&_sRegs.temp), HEX));
   __DBG_CODE(Serial.print("first register addr: "); Serial.print(regOffset(&_sRegs.calib), HEX));
   __DBG_CODE(Serial.print("status register addr: "); Serial.print(regOffset(&_sRegs.status), HEX));
@@ -57,7 +61,7 @@ eStatus_t BMP280::begin(const uint8_t deviceAddress)
     setCtrlMeasMode(eCtrlMeasModeNormal);    // set control measurement mode to make these settings effective
   } else
     lastOperateStatus = eStatusErrDeviceNotDetected;
-  return lastOperateStatus;
+  //return lastOperateStatus;
 }
 
 float BMP280::getTemperature()
@@ -188,12 +192,12 @@ void BMP280::readReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
 {
   lastOperateStatus = eStatusErrDeviceNotDetected;
   //Wire->begin();
-  Wire.beginTransmission(_addr);
+  Wire.beginTransmission(_deviceAddress);
   Wire.write(reg);
   if(Wire.endTransmission() != 0)
     return;
 
-  Wire.requestFrom(_addr, len);
+  Wire.requestFrom(_deviceAddress, len);
   for(uint8_t i = 0; i < len; i ++)
     pBuf[i] = Wire.read();
   lastOperateStatus = eStatusOK;
@@ -203,7 +207,7 @@ void BMP280::writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
 {
   lastOperateStatus = eStatusErrDeviceNotDetected;
   //_pWire->begin();
-  Wire.beginTransmission(_addr);
+  Wire.beginTransmission(_deviceAddress);
   Wire.write(reg);
   for(uint8_t i = 0; i < len; i ++)
     Wire.write(pBuf[i]);

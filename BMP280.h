@@ -17,6 +17,8 @@
 #include "Arduino.h"
 #include "Wire.h"
 
+#define BMP280_DEFAULT_ADDRESS 0x77
+
 class BMP280
 {
 public:
@@ -92,7 +94,7 @@ public:
    * @brief Enum config standby time, unit ms
    */
   typedef enum {
-    eConfigTStandby_0_5,    /**< 0.5 ms */
+    eeStatus_tConfigTStandby_0_5,    /**< 0.5 ms */
     eConfigTStandby_62_5,
     eConfigTStandby_125,
     eConfigTStandby_250,
@@ -139,12 +141,14 @@ public:
   } sRegs_t;
 
 public:
+  explicit BMP280(const uint8_t deviceAddress = BMP280_DEFAULT_ADDRESS);
+
   /**
    * @fn begin
    * @brief begin Sensor begin
    * @return Enum of eStatus_t
    */
-  eStatus_t begin(const uint8_t deviceAddress = 0x77);
+  void begin();
 
   /**
    * @fn getTemperature
@@ -228,9 +232,8 @@ public:
 
 protected:
   int32_t   _t_fine;
-  uint8_t   _addr;
+  uint8_t   _deviceAddress;
   sCalibrateDig_t   _sCalib;
-
 };
 
 #endif
