@@ -1,13 +1,7 @@
 # BMP280
 
-* [中文版](./README_CN.md)
+Temperature, Pressure and Approx altitude.
 
-DFRobot's Temperature, Pressure and Approx altitude.
-
-![产品效果图](./resources/images/SEN0372.png)
-
-## Product Link（[https://www.dfrobot.com/product-2140.html](https://www.dfrobot.com/product-2140.html)）
-    SKU: SEN0372
 
 * [Summary](#summary)
 * [Installation](#installation)

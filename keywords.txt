@@ -2,7 +2,7 @@ eSdoLow	LITERAL1
 eSdoHigh	LITERAL1
 eSdo_t	LITERAL1
 
-DFRobot_BMP280_IIC	KEYWORD1
+BMP280	KEYWORD1
 
 lastOperateStatus	KEYWORD1
 
@@ -51,5 +51,3 @@ setCtrlMeasSamplingTemp	KEYWORD1
 setCtrlMeasSamplingPress	KEYWORD1
 setConfigFilter	KEYWORD1
 setConfigTStandby	KEYWORD1
-
-BMP	KEYWORD1

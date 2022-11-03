@@ -1,5 +1,5 @@
 /*!
- * @file DFRobot_BMP280.h
+ * @file BMP280.h
  * @brief Provides an Arduino library for reading and interpreting Bosch BMP280 data over I2C. 
  * @n Used to read current temperature, air pressure and calculate altitude.
  *
@@ -7,27 +7,19 @@
  * @license     The MIT License (MIT)
  * @author [Frank](jiehan.guo@dfrobot.com)
  * @version  V1.0
- * @date  2019-03-12
- * @url https://github.com/DFRobot/DFRobot_BMP280
+ * @date  2022-11-01
+ * @url https://github.com/dvarrel/BMP280.git
  */
 
-#ifndef DFROBOT_BMP280_H
-#define DFROBOT_BMP280_H
+#ifndef BMP280_H
+#define BMP280_H
 
 #include "Arduino.h"
 #include "Wire.h"
 
-#ifndef PROGMEM
-# define PROGMEM
-#endif
-
-class DFRobot_BMP280 {
-
+class BMP280
+{
 public:
-  /**
-   * @enum eStatus_t
-   * @brief Enum global status
-   */
   typedef enum {
     eStatusOK,
     eStatusErr,
@@ -147,14 +139,12 @@ public:
   } sRegs_t;
 
 public:
-  DFRobot_BMP280();
-
   /**
    * @fn begin
    * @brief begin Sensor begin
    * @return Enum of eStatus_t
    */
-  eStatus_t begin();
+  eStatus_t begin(const uint8_t deviceAddress = 0x77);
 
   /**
    * @fn getTemperature
@@ -229,8 +219,8 @@ protected:
   uint8_t   getReg(uint8_t reg);
   void      writeRegBits(uint8_t reg, uint8_t field, uint8_t val);
 
-  virtual void    writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len) = 0;
-  virtual void    readReg(uint8_t reg, uint8_t *pBuf, uint16_t len) = 0;
+  void    writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len);
+  void    readReg(uint8_t reg, uint8_t *pBuf, uint16_t len);
 
 
 public:
@@ -238,37 +228,8 @@ public:
 
 protected:
   int32_t   _t_fine;
-
-  sCalibrateDig_t   _sCalib;
-};
-
-class DFRobot_BMP280_IIC : public DFRobot_BMP280 {
-public:
-  /**
-   * @enum eSdo_t
-   * @brief Enum pin sdo states
-   */
-  typedef enum {
-    eSdoLow,
-    eSdoHigh
-  } eSdo_t;
-
-  /**
-   * @fn DFRobot_BMP280_IIC
-   * @brief DFRobot_BMP280_IIC
-   * @param pWire Which TwoWire peripheral to operate
-   * @param eSdo Pin sdo status
-   */
-  DFRobot_BMP280_IIC(TwoWire *pWire, eSdo_t eSdo);
-
-protected:
-  void    writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len);
-  void    readReg(uint8_t reg, uint8_t *pBuf, uint16_t len);
-
-protected:
-  TwoWire   *_pWire;
-
   uint8_t   _addr;
+  sCalibrateDig_t   _sCalib;
 
 };
 

@@ -1,5 +1,5 @@
 /*!
- * @file DFRobot_BMP280.cpp
+ * @file BMP280.cpp
  * @brief Provides an Arduino library for reading and interpreting Bosch BMP280 data over I2C. 
  * @n Used to read current temperature, air pressure and calculate altitude.
  *
@@ -7,13 +7,13 @@
  * @license     The MIT License (MIT)
  * @author [Frank](jiehan.guo@dfrobot.com)
  * @version  V1.0
- * @date  2019-03-12
- * @url https://github.com/DFRobot/DFRobot_BMP280
+ * @date  2022-11-01
+ * @url https://github.com/dvarrel/BMP280.git
  */
 
-#include "DFRobot_BMP280.h"
+#include "BMP280.h"
 
-const DFRobot_BMP280::sRegs_t PROGMEM   _sRegs = DFRobot_BMP280::sRegs_t();
+const BMP280::sRegs_t PROGMEM   _sRegs = BMP280::sRegs_t();
 #ifdef __AVR__
 typedef uint16_t    platformBitWidth_t;
 #else
@@ -36,10 +36,9 @@ uint8_t regOffset(const void *pReg)
   return ((platformBitWidth_t) pReg - _regsAddr + BMP280_REG_START);
 }
 
-DFRobot_BMP280::DFRobot_BMP280() {}
-
-DFRobot_BMP280::eStatus_t DFRobot_BMP280::begin()
+eStatus_t BMP280::begin(const uint8_t deviceAddress)
 {
+  _addr = deviceAddress;
   __DBG_CODE(Serial.print("last register addr: "); Serial.print(regOffset(&_sRegs.temp), HEX));
   __DBG_CODE(Serial.print("first register addr: "); Serial.print(regOffset(&_sRegs.calib), HEX));
   __DBG_CODE(Serial.print("status register addr: "); Serial.print(regOffset(&_sRegs.status), HEX));
@@ -61,7 +60,7 @@ DFRobot_BMP280::eStatus_t DFRobot_BMP280::begin()
   return lastOperateStatus;
 }
 
-float DFRobot_BMP280::getTemperature()
+float BMP280::getTemperature()
 {
   int32_t   raw = getTemperatureRaw();
   float     rslt = 0;
@@ -76,7 +75,7 @@ float DFRobot_BMP280::getTemperature()
   return 0;
 }
 
-uint32_t DFRobot_BMP280::getPressure()
+uint32_t BMP280::getPressure()
 {
   getTemperature();   // update _t_fine
   int32_t   raw = getPressureRaw();
@@ -101,80 +100,80 @@ uint32_t DFRobot_BMP280::getPressure()
   return 0;
 }
 
-float DFRobot_BMP280::calAltitude(float seaLevelPressure, uint32_t pressure)
+float BMP280::calAltitude(float seaLevelPressure, uint32_t pressure)
 {
   return 44330 * (1.0f - pow(pressure / 100 / seaLevelPressure, 0.1903));
 }
 
-void DFRobot_BMP280::reset()
+void BMP280::reset()
 {
   uint8_t   temp = 0xb6;
   writeReg(regOffset(&_sRegs.reset), (uint8_t*) &temp, sizeof(temp));
   delay(100);
 }
 
-void DFRobot_BMP280::setCtrlMeasMode(eCtrlMeasMode_t eMode)
+void BMP280::setCtrlMeasMode(eCtrlMeasMode_t eMode)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
   sRegFlied.mode = 0xff; sRegVal.mode = eMode;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
 
-void DFRobot_BMP280::setCtrlMeasSamplingTemp(eSampling_t eSampling)
+void BMP280::setCtrlMeasSamplingTemp(eSampling_t eSampling)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
   sRegFlied.osrs_t = 0xff; sRegVal.osrs_t = eSampling;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
 
-void DFRobot_BMP280::setCtrlMeasSamplingPress(eSampling_t eSampling)
+void BMP280::setCtrlMeasSamplingPress(eSampling_t eSampling)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
   sRegFlied.osrs_p = 0xff; sRegVal.osrs_p = eSampling;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
 
-void DFRobot_BMP280::setConfigFilter(eConfigFilter_t eFilter)
+void BMP280::setConfigFilter(eConfigFilter_t eFilter)
 {
   sRegConfig_t    sRegFlied = {0}, sRegVal = {0};
   sRegFlied.filter = 0xff; sRegVal.filter = eFilter;
   writeRegBitsHelper(_sRegs.config, sRegFlied, sRegVal);
 }
 
-void DFRobot_BMP280::setConfigTStandby(eConfigTStandby_t eT)
+void BMP280::setConfigTStandby(eConfigTStandby_t eT)
 {
   sRegConfig_t    sRegFlied = {0}, sRegVal = {0};
   sRegFlied.t_sb = 0xff; sRegVal.t_sb = eT;
   writeRegBitsHelper(_sRegs.config, sRegFlied, sRegVal);
 }
 
-void DFRobot_BMP280::getCalibrate()
+void BMP280::getCalibrate()
 {
   readReg(regOffset(&_sRegs.calib), (uint8_t*) &_sCalib, sizeof(_sCalib));
 }
 
-int32_t DFRobot_BMP280::getTemperatureRaw()
+int32_t BMP280::getTemperatureRaw()
 {
   sRegTemp_t    sReg;
   readReg(regOffset(&_sRegs.temp), (uint8_t*) &sReg, sizeof(sReg));
   return (((uint32_t) sReg.msb << 12) | ((uint32_t) sReg.lsb << 4) | ((uint32_t) sReg.xlsb));
 }
 
-int32_t DFRobot_BMP280::getPressureRaw()
+int32_t BMP280::getPressureRaw()
 {
   sRegPress_t   sReg;
   readReg(regOffset(&_sRegs.press), (uint8_t*) &sReg, sizeof(sReg));
   return (((uint32_t) sReg.msb << 12) | ((uint32_t) sReg.lsb << 4) | ((uint32_t) sReg.xlsb));
 }
 
-uint8_t DFRobot_BMP280::getReg(uint8_t reg)
+uint8_t BMP280::getReg(uint8_t reg)
 {
   uint8_t   temp;
   readReg(reg, (uint8_t*) &temp, sizeof(temp));
   return temp;
 }
 
-void DFRobot_BMP280::writeRegBits(uint8_t reg, uint8_t field, uint8_t val)
+void BMP280::writeRegBits(uint8_t reg, uint8_t field, uint8_t val)
 {
   __DBG_CODE(Serial.print("reg: "); Serial.print(reg, HEX); Serial.print(" flied: "); Serial.print(field, HEX); Serial.print(" val: "); Serial.print(val, HEX));
 
@@ -185,39 +184,30 @@ void DFRobot_BMP280::writeRegBits(uint8_t reg, uint8_t field, uint8_t val)
   writeReg(reg, (uint8_t*) &temp, sizeof(temp));
 }
 
-DFRobot_BMP280_IIC::DFRobot_BMP280_IIC(TwoWire *pWire, eSdo_t eSdo)
-{
-  _pWire = pWire;
-  if(eSdo == eSdoLow)
-    _addr = 0x76;
-  else
-    _addr = 0x77;
-}
-
-void DFRobot_BMP280_IIC::readReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
+void BMP280::readReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
 {
   lastOperateStatus = eStatusErrDeviceNotDetected;
-  _pWire->begin();
-  _pWire->beginTransmission(_addr);
-  _pWire->write(reg);
-  if(_pWire->endTransmission() != 0)
+  //Wire->begin();
+  Wire.beginTransmission(_addr);
+  Wire.write(reg);
+  if(Wire.endTransmission() != 0)
     return;
 
-  _pWire->requestFrom(_addr, len);
+  Wire.requestFrom(_addr, len);
   for(uint8_t i = 0; i < len; i ++)
-    pBuf[i] = _pWire->read();
+    pBuf[i] = Wire.read();
   lastOperateStatus = eStatusOK;
 }
 
-void DFRobot_BMP280_IIC::writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
+void BMP280::writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
 {
   lastOperateStatus = eStatusErrDeviceNotDetected;
-  _pWire->begin();
-  _pWire->beginTransmission(_addr);
-  _pWire->write(reg);
+  //_pWire->begin();
+  Wire.beginTransmission(_addr);
+  Wire.write(reg);
   for(uint8_t i = 0; i < len; i ++)
-    _pWire->write(pBuf[i]);
-  if(_pWire->endTransmission() != 0)
+    Wire.write(pBuf[i]);
+  if(Wire.endTransmission() != 0)
     return;
   lastOperateStatus = eStatusOK;
 }
