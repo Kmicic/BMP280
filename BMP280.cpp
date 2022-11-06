@@ -104,9 +104,10 @@ uint32_t BMP280::getPressure()
   return 0;
 }
 
-float BMP280::calAltitude(float seaLevelPressure, uint32_t pressure)
+int16_t BMP280::calAltitude(uint32_t pressure, float seaLevelPressure)
 {
-  return 44330 * (1.0f - pow(pressure / 100 / seaLevelPressure, 0.1903));
+  float z = 44330 * (1.0f - pow(pressure / 100 / seaLevelPressure, 0.1903));
+  return round(z);
 }
 
 void BMP280::reset()
