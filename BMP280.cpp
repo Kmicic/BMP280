@@ -61,7 +61,7 @@ void BMP280::begin()
     setCtrlMeasMode(eCtrlMeasModeNormal);    // set control measurement mode to make these settings effective
   } else
     lastOperateStatus = eStatusErrDeviceNotDetected;
-  //return lastOperateStatus;
+  return lastOperateStatus;
 }
 
 float BMP280::getTemperature()
@@ -127,28 +127,32 @@ void BMP280::setCtrlMeasMode(eCtrlMeasMode_t eMode)
 void BMP280::setCtrlMeasSamplingTemp(eSampling_t eSampling)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.osrs_t = 0xff; sRegVal.osrs_t = eSampling;
+  sRegFlied.osrs_t = 0xff;
+  sRegVal.osrs_t = eSampling;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
 
 void BMP280::setCtrlMeasSamplingPress(eSampling_t eSampling)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.osrs_p = 0xff; sRegVal.osrs_p = eSampling;
+  sRegFlied.osrs_p = 0xff;
+  sRegVal.osrs_p = eSampling;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
 
 void BMP280::setConfigFilter(eConfigFilter_t eFilter)
 {
   sRegConfig_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.filter = 0xff; sRegVal.filter = eFilter;
+  sRegFlied.filter = 0xff;
+  sRegVal.filter = eFilter;
   writeRegBitsHelper(_sRegs.config, sRegFlied, sRegVal);
 }
 
 void BMP280::setConfigTStandby(eConfigTStandby_t eT)
 {
   sRegConfig_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.t_sb = 0xff; sRegVal.t_sb = eT;
+  sRegFlied.t_sb = 0xff;
+  sRegVal.t_sb = eT;
   writeRegBitsHelper(_sRegs.config, sRegFlied, sRegVal);
 }
 
