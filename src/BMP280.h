@@ -148,7 +148,7 @@ public:
    * @brief begin Sensor begin
    * @return Enum of eStatus_t
    */
-  void begin();
+  uint8_t begin();
 
   /**
    * @fn getTemperature
@@ -223,8 +223,8 @@ protected:
   uint8_t   getReg(uint8_t reg);
   void      writeRegBits(uint8_t reg, uint8_t field, uint8_t val);
 
-  virtual void    writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len);
-  virtual void    readReg(uint8_t reg, uint8_t *pBuf, uint16_t len);
+  virtual void    writeReg(uint8_t reg, uint8_t *pBuf, uint8_t len);
+  virtual void    readReg(uint8_t reg, uint8_t *pBuf, uint8_t len);
 
 
 public:

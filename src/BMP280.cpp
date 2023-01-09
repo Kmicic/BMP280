@@ -41,7 +41,7 @@ BMP280::BMP280(const uint8_t deviceAddress)
   _deviceAddress = deviceAddress;
 }
 
-void BMP280::begin()
+uint8_t BMP280::begin()
 {
   __DBG_CODE(Serial.print("last register addr: "); Serial.print(regOffset(&_sRegs.temp), HEX));
   __DBG_CODE(Serial.print("first register addr: "); Serial.print(regOffset(&_sRegs.calib), HEX));
@@ -67,14 +67,14 @@ void BMP280::begin()
 float BMP280::getTemperature()
 {
   int32_t   raw = getTemperatureRaw();
-  float     rslt = 0;
-  int32_t   v1, v2;
+  int32_t   v1, v2, T;
   if(lastOperateStatus == eStatusOK) {
     v1 = ((((raw >> 3) - ((int32_t) _sCalib.t1 << 1))) * ((int32_t) _sCalib.t2)) >> 11;
     v2 = (((((raw >> 4) - ((int32_t) _sCalib.t1)) * ((raw >> 4) - ((int32_t) _sCalib.t1))) >> 12) * ((int32_t) _sCalib.t3)) >> 14;
     _t_fine = v1 + v2;
-    rslt = (_t_fine * 5 + 128) >> 8;
-    return (rslt / 100);
+    __DBG_CODE(Serial.print("t_fine: "); Serial.print(_t_fine));
+    T = (_t_fine * 5 + 128) >> 8;
+    return (float)(T)/100.0;
   }
   return 0;
 }
@@ -120,14 +120,15 @@ void BMP280::reset()
 void BMP280::setCtrlMeasMode(eCtrlMeasMode_t eMode)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.mode = 0xff; sRegVal.mode = eMode;
+  sRegFlied.mode = 0b11; //normal mode
+  sRegVal.mode = eMode;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
 
 void BMP280::setCtrlMeasSamplingTemp(eSampling_t eSampling)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.osrs_t = 0xff;
+  sRegFlied.osrs_t = 0b111;
   sRegVal.osrs_t = eSampling;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
@@ -135,7 +136,7 @@ void BMP280::setCtrlMeasSamplingTemp(eSampling_t eSampling)
 void BMP280::setCtrlMeasSamplingPress(eSampling_t eSampling)
 {
   sRegCtrlMeas_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.osrs_p = 0xff;
+  sRegFlied.osrs_p = 0b111;
   sRegVal.osrs_p = eSampling;
   writeRegBitsHelper(_sRegs.ctrlMeas, sRegFlied, sRegVal);
 }
@@ -143,7 +144,7 @@ void BMP280::setCtrlMeasSamplingPress(eSampling_t eSampling)
 void BMP280::setConfigFilter(eConfigFilter_t eFilter)
 {
   sRegConfig_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.filter = 0xff;
+  sRegFlied.filter = 0b111;
   sRegVal.filter = eFilter;
   writeRegBitsHelper(_sRegs.config, sRegFlied, sRegVal);
 }
@@ -151,7 +152,7 @@ void BMP280::setConfigFilter(eConfigFilter_t eFilter)
 void BMP280::setConfigTStandby(eConfigTStandby_t eT)
 {
   sRegConfig_t    sRegFlied = {0}, sRegVal = {0};
-  sRegFlied.t_sb = 0xff;
+  sRegFlied.t_sb = 0b111;
   sRegVal.t_sb = eT;
   writeRegBitsHelper(_sRegs.config, sRegFlied, sRegVal);
 }
@@ -165,7 +166,9 @@ int32_t BMP280::getTemperatureRaw()
 {
   sRegTemp_t    sReg;
   readReg(regOffset(&_sRegs.temp), (uint8_t*) &sReg, sizeof(sReg));
-  return (((uint32_t) sReg.msb << 12) | ((uint32_t) sReg.lsb << 4) | ((uint32_t) sReg.xlsb));
+  int32_t raw = (((uint32_t) sReg.msb << 12) | ((uint32_t) sReg.lsb << 4) | ((uint32_t) sReg.xlsb));
+  __DBG_CODE(Serial.print("raw: "); Serial.print(raw));
+  return raw;
 }
 
 int32_t BMP280::getPressureRaw()
@@ -193,25 +196,22 @@ void BMP280::writeRegBits(uint8_t reg, uint8_t field, uint8_t val)
   writeReg(reg, (uint8_t*) &temp, sizeof(temp));
 }
 
-void BMP280::readReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
+void BMP280::readReg(uint8_t reg, uint8_t *pBuf, uint8_t len)
 {
   lastOperateStatus = eStatusErrDeviceNotDetected;
-  //Wire->begin();
   Wire.beginTransmission(_deviceAddress);
   Wire.write(reg);
   if(Wire.endTransmission() != 0)
     return;
-
   Wire.requestFrom(_deviceAddress, len);
   for(uint8_t i = 0; i < len; i ++)
     pBuf[i] = Wire.read();
   lastOperateStatus = eStatusOK;
 }
 
-void BMP280::writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
+void BMP280::writeReg(uint8_t reg, uint8_t *pBuf, uint8_t len)
 {
   lastOperateStatus = eStatusErrDeviceNotDetected;
-  //_pWire->begin();
   Wire.beginTransmission(_deviceAddress);
   Wire.write(reg);
   for(uint8_t i = 0; i < len; i ++)

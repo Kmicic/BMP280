@@ -18,11 +18,15 @@ void loop()
 {
   //Get pressure value
   uint32_t pressure = bmp280.getPressure();
+  float temperature = bmp280.getTemperature();
 
   //Print the results
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.print("°C \t");
   Serial.print("Pressure: ");
   Serial.print(pressure);
-  Serial.print("Pa \t");
+  Serial.println("Pa");
 
   delay(2000);
 }
