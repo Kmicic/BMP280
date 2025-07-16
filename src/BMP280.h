@@ -15,7 +15,7 @@
 #define BMP280_H
 
 #include "Arduino.h"
-#include "Wire.h"
+#include "microWire.h"
 
 #define BMP280_DEFAULT_ADDRESS 0x77
 
